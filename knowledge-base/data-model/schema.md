@@ -1,6 +1,6 @@
 # Data Model (Proposed)
 
-SQLAlchemy 2.0 declarative models + Alembic migrations. Auto-increment integer PKs (identity columns starting at 1; decided 2026-10-08 for readability in citations), `created_at/updated_at` on all tables. Money = `NUMERIC(18,2)` + `currency CHAR(3)`; never float. Tables are introduced **only in the sprint that needs them**.
+SQLAlchemy 2.0 declarative models + Alembic migrations. **Column order convention:** `id` first, then the most useful columns, then technical/lineage columns, then `created_at`/`updated_at` last (enforced with `sort_order` in `app/db/base.py`). Auto-increment integer PKs (identity columns starting at 1; decided 2026-10-08 for readability in citations), `created_at/updated_at` on all tables. Money = `NUMERIC(18,2)` + `currency CHAR(3)`; never float. Tables are introduced **only in the sprint that needs them**.
 
 ## Introduced in Sprint 1 (semantic foundation)
 
@@ -10,7 +10,7 @@ SQLAlchemy 2.0 declarative models + Alembic migrations. Auto-increment integer P
 | `documents` | id, `content_hash` UNIQUE, filename, storage_uri, mime, doc_type (`purchase_order`\|`invoice`\|`unknown`), doc_number NULL, page_count, status_detail NULL, is_scanned, status (`ingested`\|`failed`\|…), latest_run_id | `doc_type`/`doc_number` start nullable; filled by classifier/extractor later. Kept here (not in a typed table) because retrieval filters need them early |
 | `document_pages` | id, document_id, page_number, text, text_source (`native`\|`ocr`), ocr_mean_confidence NULL, UNIQUE(document_id, page_number) | Page = unit of citation; OCR confidence column present from day 1 (nullable) to avoid a later migration |
 | `chunks` | id, document_id, chunk_index, page_start, page_end, section NULL, chunk_type (`header`\|`table`\|`clause`\|`text`\|`footer`), text, token_count, parent_chunk_id NULL, content_hash, pipeline_version, run_id, is_active, meta JSONB | Canonical units of citation. `parent_chunk_id` supports parent-child without committing to it |
-| `chunk_embeddings` | chunk_id FK, embedding_model, `input_hash` (sha256 of exact embedded text), dim, `embedding REAL[]`, PK(chunk_id, embedding_model), index(embedding_model, input_hash) | **Embedding cache**, looked up by `(embedding_model, input_hash)` so identical text is never re-embedded (API quota is scarce), not the search index. The search index is a Qdrant collection built from this table (ADR-004). Changing model = new rows, not a migration |
+| `chunk_embeddings` | chunk_id FK, embedding_model, `input_hash` (sha256 of exact embedded text), dim, `embedding REAL[]`, id PK, UNIQUE(chunk_id, embedding_model), index(embedding_model, input_hash) | **Embedding cache**, looked up by `(embedding_model, input_hash)` so identical text is never re-embedded (API quota is scarce), not the search index. The search index is a Qdrant collection built from this table (ADR-004). Changing model = new rows, not a migration |
 
 Justification of *not* adding more now: no vendor/PO/invoice tables until extraction exists (S3); adding empty tables invites speculative design.
 

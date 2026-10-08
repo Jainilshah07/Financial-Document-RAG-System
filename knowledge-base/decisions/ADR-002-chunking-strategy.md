@@ -35,3 +35,12 @@ Compare fixed / recursive / structure-aware / structure-aware+prefix on the gold
 
 ## Reconsider if
 Structure-aware does not beat recursive+prefix by a meaningful margin on our own metrics.
+
+## Implementation note — chunker-v1 (Sprint 1, Task 5, 2026-10-08)
+Implemented in `app/ingestion/chunker.py`, driven by text only (no layout coordinates):
+- **clause** = line matching `^\d{1,2}[.)]\s+\S` plus following lines until the next heading (section = heading text);
+- **table** = ≥2 consecutive lines each containing ≥2 money-like amounts (`\d[\d,]*\.\d{2}`), plus the line just above as column header;
+- **header** = leading plain text of the document; **text** = other runs; tiny text (< 30 tokens) merges into its neighbour;
+- oversized units (> 400 est. tokens, ≈ 4 chars/token) split on line boundaries with ~40-token overlap — the only place overlap is used;
+- the contextual prefix (`[Document: … | p.N | Section: …]`) is built at embed time (`embedding_text.py`), never stored in `chunks.text`.
+Known limitations: clauses crossing a page break split in two; one-cell-per-line tables are not recognised; footers are not separated. Sizes are unvalidated until the Sprint 2 comparison.

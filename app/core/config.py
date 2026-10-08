@@ -27,10 +27,18 @@ class Settings(BaseSettings):
     # Embeddings (see ADR-003).
     embedding_model: str = "gemini-embedding-001"
     embedding_dim: int = 768
+    # Gemini free tier: ~30k tokens/min and ~1k requests/day. We pace below the limit
+    # and send many texts per request.
+    embedding_batch_size: int = 50
+    embedding_tokens_per_minute: int = 25_000
 
     # Vector index (see ADR-004): embedded Qdrant at a local path, or a server URL.
     qdrant_path: str = "./qdrant_data"
     qdrant_url: str | None = None
+
+    # Uploaded files are kept here (named by content hash). Git-ignored.
+    storage_dir: str = "./storage"
+    max_upload_mb: int = 20
 
     # Logging.
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"

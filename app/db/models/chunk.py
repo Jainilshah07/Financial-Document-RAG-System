@@ -1,6 +1,6 @@
 from typing import Any
 
-from sqlalchemy import REAL, Boolean, ForeignKey, Index, Integer, String, Text
+from sqlalchemy import REAL, Boolean, ForeignKey, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -43,28 +43,28 @@ class Chunk(IntPrimaryKeyMixin, CreatedAtMixin, Base):
     token_count: Mapped[int] = mapped_column(
         Integer, default=0, comment="Approximate token count of the text."
     )
-    parent_chunk_id: Mapped[int | None] = mapped_column(
-        ForeignKey("chunks.id"),
-        comment="Optional parent chunk for parent-child retrieval (unused in v1).",
-    )
-    content_hash: Mapped[str] = mapped_column(String(64), comment="SHA-256 of the chunk text.")
-    pipeline_version: Mapped[str] = mapped_column(
-        String(32), comment="Pipeline version that produced this chunk."
-    )
-    run_id: Mapped[int | None] = mapped_column(
-        ForeignKey("ingestion_runs.id"), comment="Ingestion run that produced this chunk."
-    )
     is_active: Mapped[bool] = mapped_column(
         Boolean,
         default=True,
         comment="False once superseded by a newer ingestion; inactive chunks are not searched.",
     )
+    parent_chunk_id: Mapped[int | None] = mapped_column(
+        ForeignKey("chunks.id"),
+        comment="Optional parent chunk for parent-child retrieval (unused in v1).",
+    )
+    run_id: Mapped[int | None] = mapped_column(
+        ForeignKey("ingestion_runs.id"), comment="Ingestion run that produced this chunk."
+    )
+    pipeline_version: Mapped[str] = mapped_column(
+        String(32), comment="Pipeline version that produced this chunk."
+    )
+    content_hash: Mapped[str] = mapped_column(String(64), comment="SHA-256 of the chunk text.")
     meta: Mapped[dict[str, Any]] = mapped_column(
         JSONB, default=dict, comment="Extra structural metadata (e.g. contextual prefix fields)."
     )
 
 
-class ChunkEmbedding(Base):
+class ChunkEmbedding(IntPrimaryKeyMixin, Base):
     """Embedding *cache*, not the search index (that is Qdrant, ADR-004).
 
     Gemini's free tier allows ~1k requests/day, so a vector is never recomputed if we
@@ -73,24 +73,26 @@ class ChunkEmbedding(Base):
 
     __tablename__ = "chunk_embeddings"
     __table_args__ = (
+        # A chunk has at most one vector per embedding model.
+        UniqueConstraint("chunk_id", "embedding_model"),
+        # Cache lookup: "do we already hold a vector for this exact input text?"
         Index("ix_chunk_embeddings_model_input_hash", "embedding_model", "input_hash"),
         {"comment": "Embedding cache (not the search index): one vector per chunk per model."},
     )
 
     chunk_id: Mapped[int] = mapped_column(
         ForeignKey("chunks.id", ondelete="CASCADE"),
-        primary_key=True,
         comment="Embedded chunk; the vector is deleted with it.",
     )
     embedding_model: Mapped[str] = mapped_column(
-        String(100), primary_key=True, comment="Model id, e.g. gemini-embedding-001."
+        String(100), comment="Model id and dimension, e.g. gemini-embedding-001:768."
+    )
+    dim: Mapped[int] = mapped_column(Integer, comment="Vector dimensionality.")
+    embedding: Mapped[list[float]] = mapped_column(
+        ARRAY(REAL), comment="The embedding vector (float4 array)."
     )
     input_hash: Mapped[str] = mapped_column(
         String(64),
         comment="SHA-256 of the exact text sent to the embedder (prefix + chunk text); "
         "cache key together with embedding_model.",
-    )
-    dim: Mapped[int] = mapped_column(Integer, comment="Vector dimensionality.")
-    embedding: Mapped[list[float]] = mapped_column(
-        ARRAY(REAL), comment="The embedding vector (float4 array)."
     )

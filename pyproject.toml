@@ -17,6 +17,9 @@ dependencies = [
     "alembic>=1.13",               # database migrations
     "psycopg[binary]>=3.2",        # PostgreSQL driver
     "structlog>=24.1",             # structured (JSON) logging
+    "pymupdf>=1.24",               # PDF/image reading: text, form fields, page images
+    "httpx>=0.27",                 # HTTP client (Gemini embeddings API)
+    "qdrant-client>=1.10",         # vector index (embedded local mode; ADR-004)
 ]
 
 [project.optional-dependencies]
@@ -40,3 +43,7 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI's dependency-injection idiom: `param: T = Depends(...)` / `Query(...)`.
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Query"]

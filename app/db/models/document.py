@@ -18,6 +18,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base, CreatedAtMixin, IntPrimaryKeyMixin, TimestampMixin
 from app.db.models.enums import DocumentStatus, DocumentType, RunStatus, TextSource
 
+# Column order convention (it becomes the physical table layout): id first, then the
+# columns people look at most, then technical/lineage columns, then created_at/updated_at.
+
 
 def str_enum(enum_cls: type, length: int = 20) -> Enum:
     """Store enum *values* as plain VARCHAR (not a native PG enum): adding a value later
@@ -41,20 +44,20 @@ class IngestionRun(IntPrimaryKeyMixin, Base):
         "the pipeline version that produced them."
     }
 
-    started_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), comment="When the run started (UTC)."
-    )
-    finished_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), comment="When the run ended (UTC); NULL while running."
+    status: Mapped[RunStatus] = mapped_column(
+        str_enum(RunStatus),
+        default=RunStatus.RUNNING,
+        comment="running | succeeded | failed.",
     )
     pipeline_version: Mapped[str] = mapped_column(
         String(32),
         comment="Version label of the ingestion code/config (parser, chunker, embedder).",
     )
-    status: Mapped[RunStatus] = mapped_column(
-        str_enum(RunStatus),
-        default=RunStatus.RUNNING,
-        comment="running | succeeded | failed.",
+    started_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), comment="When the run started (UTC)."
+    )
+    finished_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), comment="When the run ended (UTC); NULL while running."
     )
     stats: Mapped[dict[str, Any]] = mapped_column(
         JSONB,
@@ -71,16 +74,7 @@ class Document(IntPrimaryKeyMixin, TimestampMixin, Base):
         "comment": "One uploaded file (purchase order or invoice). Canonical record of the source."
     }
 
-    content_hash: Mapped[str] = mapped_column(
-        String(64),
-        unique=True,
-        comment="SHA-256 of the file bytes; uniqueness makes re-uploads idempotent.",
-    )
     filename: Mapped[str] = mapped_column(String(255), comment="Original uploaded file name.")
-    storage_uri: Mapped[str] = mapped_column(
-        String(1024),
-        comment="Where the raw file is stored (local path now; object store later).",
-    )
     mime_type: Mapped[str] = mapped_column(String(100), comment="e.g. application/pdf, image/png.")
     doc_type: Mapped[DocumentType] = mapped_column(
         str_enum(DocumentType),
@@ -106,6 +100,15 @@ class Document(IntPrimaryKeyMixin, TimestampMixin, Base):
     latest_run_id: Mapped[int | None] = mapped_column(
         ForeignKey("ingestion_runs.id"),
         comment="Most recent ingestion run that processed this file.",
+    )
+    content_hash: Mapped[str] = mapped_column(
+        String(64),
+        unique=True,
+        comment="SHA-256 of the file bytes; uniqueness makes re-uploads idempotent.",
+    )
+    storage_uri: Mapped[str] = mapped_column(
+        String(1024),
+        comment="Where the raw file is stored (local path now; object store later).",
     )
 
     pages: Mapped[list["DocumentPage"]] = relationship(

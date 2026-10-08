@@ -18,6 +18,14 @@ class Base(DeclarativeBase):
     metadata = MetaData(naming_convention=NAMING_CONVENTION)
 
 
+# Column order in a table = order of creation. Columns that come from mixins would
+# otherwise be appended after the model's own columns, so `sort_order` pins them:
+# the primary key first, audit timestamps last, everything else in declaration order.
+_FIRST = -100
+_LAST_CREATED = 9998
+_LAST_UPDATED = 9999
+
+
 class IntPrimaryKeyMixin:
     """Auto-incrementing integer primary key (PostgreSQL identity column, starts at 1).
     Short and readable in citations and logs ("document 3, page 2"). The id exists only
@@ -27,6 +35,7 @@ class IntPrimaryKeyMixin:
         Integer,
         Identity(),
         primary_key=True,
+        sort_order=_FIRST,
         comment="Surrogate primary key (auto-increment from 1).",
     )
 
@@ -35,6 +44,7 @@ class CreatedAtMixin:
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
+        sort_order=_LAST_CREATED,
         comment="Row creation time (UTC).",
     )
 
@@ -44,5 +54,6 @@ class TimestampMixin(CreatedAtMixin):
         DateTime(timezone=True),
         server_default=func.now(),
         onupdate=func.now(),
+        sort_order=_LAST_UPDATED,
         comment="Time of the last update to this row (UTC).",
     )

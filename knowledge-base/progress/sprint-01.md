@@ -36,6 +36,10 @@ scaffold → DB/migrations → parser+normaliser (TDD) → chunker (TDD) → emb
 | # | Task | Status |
 |---|---|---|
 | 1 | Scaffold: pyproject, .venv, .gitignore, .env.example, `app/main.py` + `/health`, first test, `data/sample/` | ✅ 2026-10-08 — 1 test passing, ruff clean |
-| 2 | Settings (pydantic-settings) + structured logging | next |
+| 2 | Settings (pydantic-settings) + structured logging | ✅ 2026-10-08 |
 | 3 | DB models + Alembic first migration | ✅ 2026-10-08 — 5 tables migrated to `finrag`; 14 tests passing (5 integration, isolated schema) |
-| 4 | Parser + normaliser (PyMuPDF text, AcroForm widgets, placeholder filter) | next |
+| 4 | Parser + normaliser (PyMuPDF text, AcroForm widgets, placeholder filter) | ✅ 2026-10-08 — verified on samples by user (PNGs → needs_ocr; placeholders stripped; form text de-duplicated) |
+| 5 | Structure-aware chunker v1 + embedding-input prefix | ✅ 2026-10-08 — verified on samples by user |
+| 6 | Embedder (Gemini, batching, backoff), Qdrant index, Postgres embedding cache | code written 2026-10-08 — awaiting user check (`scripts/try_semantic_search.py`) |
+| 7 | Ingestion service (register → parse → chunk → embed → index) + `POST /upload`, `GET /documents` | code written 2026-10-08 — awaiting user check (Swagger) |
+| 8 | Retrieval + LLM chain (ChatPromptTemplate, Groq) + `POST /ask` with citations | next |
