@@ -1,6 +1,6 @@
 # ADR-001 — Data model and canonical-store separation
 
-**Status:** Proposed · **Date:** 2026-10-06
+**Status:** Accepted 2026-10-07 (Sprint 0). Spike B added no schema change; note `documents` must tolerate placeholder-only/empty templates · **Date:** 2026-10-06
 
 ## Context
 Sprint 1 is semantic RAG, but the end system needs relational PO/invoice data, provenance and confidence. A retrieval-only schema would force rewrites.

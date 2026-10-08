@@ -36,7 +36,7 @@ The statement says finding and resolving ambiguity is part of the work and the m
 |---|---|---|
 | Parts A/B | Skipped, not required | A-01 closed; revisit only if a requirement surfaces |
 | Synthetic corpus | Not needed now; 6 real samples in `dataset/` (5 PO + no invoices yet); public datasets for more | A-02 revised: see `dataset-sources.md`. A small generator may still be needed in Sprint 3/6 for PO↔invoice pairs (no public set has linked pairs) — decide then |
-| Postgres/pgvector vs Chroma | "Whatever suits best" | ADR-004 → **pgvector accepted** |
+| Postgres/pgvector vs Chroma | "Whatever suits best" | ADR-004 → pgvector accepted, then **superseded 2026-10-08: Qdrant (embedded)** because local Postgres has no pgvector |
 | Embeddings | Unsure; user uses **Groq** | Groq has no embeddings endpoint → ADR-003 revised: **local embeddings** |
 | Indian FY quarters | Yes | A-03 confirmed |
 

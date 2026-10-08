@@ -11,7 +11,7 @@ Refined from the brief's initial roadmap against Part D deadlines. **Changes and
 | Sprint | Theme | Key deliverables | Part D tie-in |
 |---|---|---|---|
 | **0** | Research & architecture | Approve ADRs 001–005, research notes, corpus strategy, eval strategy, env setup | — |
-| **1** | Semantic RAG foundation | Compose (Postgres+pgvector), Alembic base schema, `/upload`, `/ask` (semantic only), structure-aware chunker v1, embeddings, ChatPromptTemplate + configurable LLM, citations; ~20-doc seed corpus; Swagger demo | Ingestion pipeline (wk 2), `/ask` (wk 3) |
+| **1** | Semantic RAG foundation | local Postgres + Qdrant embedded, Alembic base schema, `/upload`, `/ask` (semantic only), structure-aware chunker v1, embeddings, ChatPromptTemplate + configurable LLM, citations; ~20-doc seed corpus; Swagger demo | Ingestion pipeline (wk 2), `/ask` (wk 3) |
 | **2** | Corpus & retrieval evaluation | Full synthetic generator (500+, ≥50 scanned, manifest, injected mismatches); golden set v0 + router set draft; Recall@K/P@K/MRR runner; chunking & embedding comparison; top-K/MMR/metadata filters; declare latency & ₹ budgets | Golden set + CI eval skeleton (wk 4), budget declared |
 | **3** | Structured extraction + SQL | Extractors for born-digital docs, validators (Σ checks), vendors/PO/invoice tables, query-plan compiler, SQL arithmetic, field provenance | FR-1, FR-3 |
 | **4** | OCR + confidence | Page triage, OCR engine bake-off, per-field confidence, threshold calibration, flagging, scanned set into the store | FR-4, FR-5 |

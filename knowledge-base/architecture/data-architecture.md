@@ -21,7 +21,8 @@ Document ─► Page ─► Section (logical unit: header, line-items table, cla
 | Raw file bytes | filesystem / object-store path (`storage_uri`), sha256 | Large, immutable; DB holds pointer + hash |
 | Documents, pages, page text, OCR conf | PostgreSQL | Canonical, queryable, referential integrity |
 | Chunk text + structural metadata (section, type, pages, parent) | PostgreSQL `chunks` | Chunks are canonical *units of citation*; chunking can be re-run and versioned |
-| Embedding vectors | pgvector table `chunk_embeddings(chunk_id, model, dim, vector)` | Derived; keyed by model so we can A/B embedding models and re-embed without touching chunks |
+| Embedding cache | Postgres `chunk_embeddings(chunk_id, embedding_model, dim, embedding real[])` | Expensive-to-recompute (API quota); keyed by model so we can A/B models |
+| Vector index | Qdrant collection per embedding model (embedded local mode), point id = chunk_id | Derived; rebuilt from the cache with `reindex`; native payload filters + later sparse/RRF |
 | Lexical index (BM25) | Built from `chunks.text` (in-memory `rank_bm25` or PG FTS/ParadeDB — decide Sprint 7) | Derived |
 | Typed financial fields, line items, vendors | PostgreSQL relational tables (Sprint 3+) | Exact filtering/aggregation, constraints, `NUMERIC` money |
 | Field-level confidence + bbox + extractor | PostgreSQL provenance table | Needed for flagging and "verify against source" |
@@ -30,7 +31,7 @@ Document ─► Page ─► Section (logical unit: header, line-items table, cla
 
 ## Vector-side metadata (filter keys)
 
-With pgvector in the same database, filters are expressed as SQL joins against canonical tables, so **no denormalised metadata needs to be duplicated into the vector store** — avoiding drift. If we ever move to an external vector DB (reconsider trigger in ADR-004), the payload per vector will be:
+Qdrant is a separate store, so filter keys **are denormalised into the point payload** (and kept in sync by the write-order rule in ADR-004). Payload per vector:
 `chunk_id, document_id, document_type, document_number, page_start, vendor_id, section, chunk_type, pipeline_version, embedding_model`.
 
 ## Idempotency & versioning
@@ -41,4 +42,4 @@ With pgvector in the same database, filters are expressed as SQL joins against c
 
 ## Hybrid-query data path
 
-`SQL filter → set of document_ids → retriever(filter={document_id IN ...})`. In pgvector this is one engine, one transaction snapshot: the filtered set and the retrieved chunks cannot disagree.
+`SQL filter → set of document_ids → retriever(filter={document_id IN ...})`. Two stores, so the two steps can disagree only if the index is stale; the `is_active` payload flag and `reindex --verify` guard this.

@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "financial-doc-rag"
+version = "0.1.0"
+description = "Structured + semantic routing over financial documents (Problem 2)"
+requires-python = ">=3.12"
+# Runtime dependencies are added task-by-task, so each one has a visible reason.
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",     # ASGI server that runs FastAPI
+    "pydantic-settings>=2.4",      # typed config from environment / .env
+    "python-multipart>=0.0.9",     # needed by FastAPI for file uploads (/upload)
+    "sqlalchemy>=2.0",             # ORM / SQL toolkit
+    "alembic>=1.13",               # database migrations
+    "psycopg[binary]>=3.2",        # PostgreSQL driver
+    "structlog>=24.1",             # structured (JSON) logging
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "httpx>=0.27",                 # FastAPI TestClient dependency
+    "ruff>=0.6",                   # linter + formatter
+]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["integration: needs real Postgres / external services"]
+
+[tool.ruff]
+extend-exclude = ["knowledge-base", "alembic/versions"]  # docs and generated migrations
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

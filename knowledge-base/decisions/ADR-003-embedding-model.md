@@ -1,9 +1,9 @@
 # ADR-003 — Embedding model
 
-**Status:** Proposed — *leaning only; model names, prices and dimensions must be re-verified against current docs in Sprint 0 before acceptance.* · **Date:** 2026-10-06
+**Status:** Accepted 2026-10-07 — Gemini `gemini-embedding-001` @768-d (verified live; Spike A confirmed it separates meaning, not numbers). Re-benchmark vs local BGE in Sprint 2 · **Date:** 2026-10-06
 
 ## Context
-Embeddings serve only the semantic/text side (clauses, terms). They are known to be weak on numbers, which is why SQL exists. Corpus is small (thousands of chunks), English, short chunks. Need: good clause-level semantic quality, cheap (₹/query budget), swappable, compatible with pgvector (dimension ≲ 2000 for HNSW; smaller is faster).
+Embeddings serve only the semantic/text side (clauses, terms). They are known to be weak on numbers, which is why SQL exists. Corpus is small (thousands of chunks), English, short chunks. Need: good clause-level semantic quality, cheap (₹/query budget), swappable, compatible with Qdrant (any dimension; smaller is faster/cheaper).
 
 ## Candidates
 

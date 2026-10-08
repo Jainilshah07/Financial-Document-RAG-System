@@ -49,7 +49,7 @@ Dependency rule: `api → services → {ingestion, retrieval, routing, llm, extr
 | Parser | PyMuPDF/pdfplumber text + layout blocks + tables | 1 |
 | Chunker | structure-aware (ADR-002) | 1 |
 | Embedder | `Embeddings` interface, model recorded per vector | 1 |
-| Index | pgvector (ADR-004) behind `VectorIndex` protocol | 1 |
+| Index | Qdrant, embedded local mode (ADR-004) behind `VectorIndex` protocol; Postgres keeps the embedding cache | 1 |
 | Retriever | `retrieve(query, filters, k) -> list[Hit]` | 1 |
 | Answer chain | ChatPromptTemplate → configurable LLM; LCEL, no LangGraph | 1 |
 | Extractor + validators | typed rows with per-field confidence & provenance | 3–4 |
@@ -73,7 +73,7 @@ Dependency rule: `api → services → {ingestion, retrieval, routing, llm, extr
 
 - **Config**: pydantic-settings, `.env`; providers/models/thresholds are settings, not code.
 - **Logging**: structured JSON with `trace_id`, route, retrieval k, latency per stage, token counts (feeds ₹/query).
-- **Testing**: unit (chunker, normaliser, RRF, plan compiler), integration (Postgres via Docker, API via TestClient, LLM faked), eval (real LLM, run in CI with cached fixtures where possible).
+- **Testing**: unit (chunker, normaliser, RRF, plan compiler), integration (local Postgres test database + in-memory Qdrant, API via TestClient, LLM faked), eval (real LLM, run in CI with cached fixtures where possible).
 - **Migrations**: Alembic only; no `create_all` outside tests.
 - **Cost accounting**: every LLM/embedding call logs tokens → ₹ (Part D budget report).
 

@@ -27,8 +27,10 @@ Long-term project memory. If a decision, requirement or result is not here, it d
 | `progress/roadmap.md` | Sprint roadmap (refined against Part D deadlines) |
 | `progress/sprint-00.md` | Sprint 0 scope, research questions, exit criteria |
 | `prerequisites.md` | Accounts, keys, software to install |
-| `research/`, `evaluation/` | Created when Sprint 0 / Sprint 2 produce content — not stubbed ahead of time |
+| `research/sprint-00-findings.md` | Spike results + condensed research |
+| `evaluation/evaluation-strategy.md` | Metrics, golden/router sets, regression policy, ablation plan |
+| `requirements/dataset-sources.md` | Where to get more documents |
 
 ## Status
 
-Foundation proposed, **awaiting user approval** to begin Sprint 0. No application code exists yet.
+Sprint 0 complete. Sprint 1 planned (`progress/sprint-01.md`), awaiting go-ahead. No application code yet.

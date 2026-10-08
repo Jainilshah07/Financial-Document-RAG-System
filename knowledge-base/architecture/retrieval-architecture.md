@@ -15,12 +15,19 @@ Query ─► Query analysis (route, entities: vendor, doc no., dates, amounts)
 
 ```python
 class Retriever(Protocol):
-    def retrieve(self, query: str, *, k: int, filters: RetrievalFilters | None = None) -> list[Hit]: ...
+    def retrieve(
+        self, query: str, *, k: int, filters: RetrievalFilters | None = None
+    ) -> list[Hit]: ...
+
 
 @dataclass(frozen=True)
 class Hit:
-    chunk_id: UUID; document_id: UUID; page_start: int; text: str
-    score: float; retriever: str          # "dense" | "bm25" | "rrf" | "rerank"
+    chunk_id: int
+    document_id: int
+    page_start: int
+    text: str
+    score: float
+    retriever: str  # "dense" | "bm25" | "rrf" | "rerank"
 ```
 - `RetrievalFilters`: `document_ids`, `document_type`, `vendor_id`, `date_range` — compiled to SQL.
 - Later: `HybridRetriever(retrievers=[...], fuser=RRF())` and `Reranked(inner, reranker)` are decorators/compositions; no caller changes.

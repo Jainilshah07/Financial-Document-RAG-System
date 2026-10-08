@@ -1,6 +1,6 @@
 # ADR-002 — Chunking strategy
 
-**Status:** Proposed (research + empirical comparison pending in Sprint 0/2) · **Date:** 2026-10-06
+**Status:** Accepted as *v1 baseline* 2026-10-07; sizes/overlap to be validated by the Sprint 2 comparison (not final) · **Date:** 2026-10-06
 
 ## Context
 Corpus = short (1–3 page) POs/invoices with: header block (numbers, dates, parties), line-item tables, totals, terms/clauses (delivery, payment, warranty), footers. Facts that must stay together: `doc number + vendor + clause text`; a table row's cells; a clause and its heading. Boilerplate T&C repeats across POs. Numbers are *not* answered by retrieval (SQL does that), so chunks mainly serve **semantic/text questions** and hybrid answers.
